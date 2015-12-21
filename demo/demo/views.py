@@ -92,4 +92,3 @@ class PaginationView(TemplateView):
 
 class MiscView(TemplateView):
     template_name = 'demo/misc.html'
-
