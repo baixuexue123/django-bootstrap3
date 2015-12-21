@@ -13,7 +13,7 @@
         {% endif %}
 
         {% for p in pages_shown %}
-            <li{% if current_page == p %} class="active"{% endif %}>
+            <li {% if current_page == p %}class="active"{% endif %}>
                 <a href="{% if current_page == p %}#{% else %}{{ bootstrap_pagination_url }}{{ parameter_name }}={{ p }}{% endif %}">{{ p }}</a>
             </li>
         {% endfor %}
