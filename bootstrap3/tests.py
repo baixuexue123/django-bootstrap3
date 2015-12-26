@@ -19,6 +19,7 @@ try:
 except ImportError:
     from HTMLParser import HTMLParser
 
+
 RADIO_CHOICES = (
     ('1', 'Radio 1'),
     ('2', 'Radio 2'),
