@@ -24,7 +24,7 @@ class HomePageView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super(HomePageView, self).get_context_data(**kwargs)
-        messages.info(self.request, 'This is a demo of a message.')
+        messages.info(self.request, 'hello http://example.com')
         return context
 
 
@@ -74,7 +74,7 @@ class PaginationView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super(PaginationView, self).get_context_data(**kwargs)
         lines = []
-        for i in range(10000):
+        for i in range(200):
             lines.append('Line %s' % (i + 1))
         paginator = Paginator(lines, 10)
         page = self.request.GET.get('page')

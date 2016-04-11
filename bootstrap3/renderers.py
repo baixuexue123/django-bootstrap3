@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
-from django.contrib.auth.forms import ReadOnlyPasswordHashWidget
 
+from django.contrib.auth.forms import ReadOnlyPasswordHashWidget
 from django.forms import (
     TextInput, DateInput, FileInput, CheckboxInput, MultiWidget,
     ClearableFileInput, Select, RadioSelect, CheckboxSelectMultiple
@@ -10,17 +10,16 @@ from django.forms.extras import SelectDateWidget
 from django.forms.forms import BaseForm, BoundField
 from django.forms.formsets import BaseFormSet
 from django.utils.html import conditional_escape, escape, strip_tags
-from django.template.loader import get_template
 from django.utils.safestring import mark_safe
 
 from .bootstrap import get_bootstrap_setting
-from .text import text_value
 from .exceptions import BootstrapError
-from .utils import add_css_class, render_template_to_unicode
 from .forms import (
     render_form, render_field, render_label, render_form_group,
     is_widget_with_placeholder, is_widget_required_attribute, FORM_GROUP_CLASS
 )
+from .text import text_value
+from .utils import add_css_class, render_template_file
 
 
 class BaseRenderer(object):
@@ -117,7 +116,7 @@ class FormsetRenderer(BaseRenderer):
     def render_errors(self):
         formset_errors = self.get_formset_errors()
         if formset_errors:
-            return render_template_to_unicode(
+            return render_template_file(
                 'bootstrap3/form_errors.html',
                 context={
                     'errors': formset_errors,
@@ -195,7 +194,7 @@ class FormRenderer(BaseRenderer):
             form_errors = self.form.non_field_errors()
 
         if form_errors:
-            return render_template_to_unicode(
+            return render_template_file(
                 'bootstrap3/form_errors.html',
                 context={
                     'errors': form_errors,
@@ -240,8 +239,8 @@ class FieldRenderer(BaseRenderer):
         else:
             self.placeholder = ''
 
-        self.addon_before = kwargs.get('addon_before', self.initial_attrs.pop('addon_before', ''))
-        self.addon_after = kwargs.get('addon_after', self.initial_attrs.pop('addon_after', ''))
+        self.addon_before = kwargs.get('addon_before', self.widget.attrs.pop('addon_before', ''))
+        self.addon_after = kwargs.get('addon_after', self.widget.attrs.pop('addon_after', ''))
 
         # These are set in Django or in the global BOOTSTRAP3 settings, and
         # they can be overwritten in the template
@@ -275,7 +274,7 @@ class FieldRenderer(BaseRenderer):
         self.set_disabled = kwargs.get('set_disabled', False)
 
     def restore_widget_attrs(self):
-        self.widget.attrs = self.initial_attrs
+        self.widget.attrs = self.initial_attrs.copy()
 
     def add_class_attrs(self, widget=None):
         if widget is None:
@@ -422,7 +421,7 @@ class FieldRenderer(BaseRenderer):
             help_text_and_errors.append(self.field_help)
         help_text_and_errors += self.field_errors
         if help_text_and_errors:
-            help_html = render_template_to_unicode(
+            help_html = render_template_file(
                 'bootstrap3/field_help_text_and_errors.html',
                 context={
                     'field': self.field,
