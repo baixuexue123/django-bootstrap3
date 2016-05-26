@@ -19,6 +19,7 @@ from ..forms import (
     render_form_group, render_formset,
     render_label, render_form_errors, render_formset_errors
 )
+from ..table import render_table_detail
 from ..text import force_text
 from ..utils import handle_var, parse_token_contents
 from ..utils import render_link_tag, render_tag, render_template_file
@@ -877,3 +878,8 @@ def get_pagination_context(page, pages_to_show=11,
         'pagination_css_classes': ' '.join(pagination_css_classes),
         'parameter_name': parameter_name,
     }
+
+
+@register.simple_tag
+def bootstrap_table_detail(obj, **kwargs):
+    return render_table_detail(obj, **kwargs)
