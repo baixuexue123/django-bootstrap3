@@ -25,8 +25,17 @@ def render_tr(content=None, theme=None):
     attrs = {}
     if theme is not None:
         attrs['class'] = theme
-    render_tag('tr', attrs=attrs, content=content)
+    return render_tag('tr', attrs=attrs, content=content)
 
 
 def render_table_detail(obj, **kwargs):
-    table = render_table()
+    theme = kwargs.get('theme')
+    border = kwargs.get('border')
+    hover = kwargs.get('hover')
+    striped = kwargs.get('striped')
+    names = [field.name for field in obj._meta.fields]
+    rows = []
+    for name in names:
+        c = "<th>{name}</th><td>{value}</td>".format(name=name, value=getattr(obj, name))
+        rows.append(render_tr(content=c, theme=theme))
+    return render_table(content=rows, border=border, hover=hover, striped=striped)
