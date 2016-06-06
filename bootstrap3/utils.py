@@ -134,6 +134,6 @@ def render_template_file(template, context=None):
     """
     Render a Template to unicode
     """
-    assert type(context) == type({})
+    assert isinstance(context, dict)
     template = get_template(template)
     return template.render(context)

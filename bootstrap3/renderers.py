@@ -398,7 +398,7 @@ class FieldRenderer(BaseRenderer):
             checkbox_class = add_css_class('checkbox', self.get_size_class())
             html = '<div class="{klass}">{content}</div>'.format(
                 klass=checkbox_class,
-                content=html,
+                content=html
             )
         return html
 
@@ -411,7 +411,7 @@ class FieldRenderer(BaseRenderer):
             html = '<div class="input-group">{before}{html}{after}</div>'.format(
                 before=before,
                 after=after,
-                html=html
+                html=html,
             )
         return html
 

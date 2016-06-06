@@ -7,7 +7,7 @@ from importlib import import_module
 
 # Default settings
 BOOTSTRAP3_DEFAULTS = {
-    'jquery_url': '//static/jquery/jquery-1.11.3.min.js',
+    'jquery_url': '//static/jquery/jquery-1.12.4.min.js',
     'base_url': '//static/bootstrap/',
     'css_url': None,
     'theme_url': None,
