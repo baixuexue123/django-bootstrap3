@@ -137,4 +137,3 @@ def render_template_file(template, context=None):
     assert type(context) == type({})
     template = get_template(template)
     return template.render(context)
-
