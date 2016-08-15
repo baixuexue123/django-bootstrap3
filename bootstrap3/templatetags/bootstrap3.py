@@ -597,6 +597,32 @@ def bootstrap_icon(icon, **kwargs):
 
 
 @register.simple_tag
+def bootstrap_span(content, span_type='default'):
+    """
+    Render an span
+
+    **Tag name**::
+
+        bootstrap_span
+
+    **Parameters**:
+
+        content
+            HTML content of alert
+
+    **Usage**::
+
+        {% bootstrap_span content span_type %}
+
+    **Example**::
+
+        {% bootstrap_span "content" "success" %}
+
+    """
+    return render_span(content, span_type=span_type)
+
+
+@register.simple_tag
 def bootstrap_alert(content, alert_type='info', dismissable=True):
     """
     Render an alert

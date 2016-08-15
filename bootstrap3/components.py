@@ -38,3 +38,15 @@ def render_alert(content, alert_type=None, dismissable=True):
         attrs={'class': ' '.join(css_classes)},
         content=button_placeholder + text_value(content),
     ).replace(button_placeholder, button))
+
+
+def render_span(content, span_type=None):
+    """
+    Render a span with content
+    <span class="label label-success">Active</span>
+    """
+    attrs = {
+        'class': 'label label-{}'.format(text_value(span_type))
+    }
+    return render_tag('span', attrs=attrs, content=content)
+
