@@ -13,7 +13,7 @@ from django.utils.safestring import mark_safe
 from ..bootstrap import (
     css_url, javascript_url, jquery_url, theme_url, get_bootstrap_setting
 )
-from ..components import render_icon, render_alert
+from ..components import render_icon, render_alert, render_span
 from ..forms import (
     render_button, render_field, render_field_and_label, render_form,
     render_form_group, render_formset,

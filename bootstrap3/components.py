@@ -42,11 +42,12 @@ def render_alert(content, alert_type=None, dismissable=True):
 
 def render_span(content, span_type=None):
     """
-    Render a span with content
+    Render a Bootstrap span
     <span class="label label-success">Active</span>
     """
+    if span_type is None:
+        span_type = 'info'
     attrs = {
         'class': 'label label-{}'.format(text_value(span_type))
     }
     return render_tag('span', attrs=attrs, content=content)
-
