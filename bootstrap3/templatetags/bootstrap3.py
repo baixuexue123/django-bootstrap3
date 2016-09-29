@@ -21,7 +21,7 @@ from ..forms import (
 )
 from ..table import render_table_detail
 from ..text import force_text
-from ..utils import handle_var, parse_token_contents
+from ..utils import handle_var, parse_token_contents, url_replace_param
 from ..utils import render_link_tag, render_tag, render_template_file
 
 MESSAGE_LEVEL_CLASSES = {
@@ -501,7 +501,7 @@ def bootstrap_label(*args, **kwargs):
 
     **Example**::
 
-        {% bootstrap_label "Email address" for="exampleInputEmail1" %}
+        {% bootstrap_label "Email address" label_for="exampleInputEmail1" %}
 
     """
     return render_label(*args, **kwargs)
@@ -819,6 +819,11 @@ def bootstrap_pagination(page, **kwargs):
     pagination_kwargs = kwargs.copy()
     pagination_kwargs['page'] = page
     return get_pagination_context(**pagination_kwargs)
+
+
+@register.simple_tag
+def bootstrap_url_replace_param(url, name, value):
+    return url_replace_param(url, name, value)
 
 
 def get_pagination_context(page, pages_to_show=11,

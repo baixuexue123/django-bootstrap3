@@ -92,6 +92,10 @@ class TestForm(forms.Form):
 
     required_css_class = 'bootstrap3-req'
 
+    # Set this to allow tests to work properly in Django 1.10+
+    # More information, see issue #337
+    use_required_attribute = False
+
     def clean(self):
         cleaned_data = super(TestForm, self).clean()
         raise forms.ValidationError(
@@ -198,14 +202,14 @@ class SettingsTest(TestCase):
         res = render_template_with_form('{% bootstrap_javascript %}')
         self.assertEqual(
             res.strip(),
-            '<script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>'
+            '<script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>'
         )
 
     def test_bootstrap_css_tag(self):
         res = render_template_with_form('{% bootstrap_css %}')
         self.assertIn(res.strip(), [
-            '<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">',
-            '<link href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet">',
+            '<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">',
+            '<link href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">',
         ])
 
     def test_settings_filter(self):
@@ -453,6 +457,10 @@ class FieldTest(TestCase):
         rendered_b = render_form_field("addon", context)
         self.assertEqual(rendered_a, rendered_b)
 
+    def test_label(self):
+        res = render_template_with_form('{% bootstrap_label "foobar" label_for="subject" %}')
+        self.assertEqual('<label for="subject">foobar</label>', res)
+
     def test_attributes_consistency(self):
         form = TestForm()
         attrs = form.fields['addon'].widget.attrs.copy()
@@ -506,11 +514,11 @@ class MessagesTest(TestCase):
         res = render_template_with_form(
             '{% bootstrap_messages messages %}', {'messages': messages})
         expected = """
-        <div class="alert alert-warning alert-dismissable">
-            <button type="button" class="close" data-dismiss="alert"
-                aria-hidden="true">&#215;</button>
-            hello
-        </div>
+            <div class="alert alert-warning alert-dismissable">
+                <button type="button" class="close" data-dismiss="alert"
+                    aria-hidden="true">&#215;</button>
+                hello
+            </div>
         """
         self.assertEqual(
             re.sub(pattern, '', res),
@@ -521,11 +529,11 @@ class MessagesTest(TestCase):
         res = render_template_with_form(
             '{% bootstrap_messages messages %}', {'messages': messages})
         expected = """
-        <div class="alert alert-danger alert-dismissable">
-            <button type="button" class="close" data-dismiss="alert"
-                aria-hidden="true">&#215;</button>
-            hello
-        </div>
+            <div class="alert alert-danger alert-dismissable">
+                <button type="button" class="close" data-dismiss="alert"
+                    aria-hidden="true">&#215;</button>
+                hello
+            </div>
         """
         self.assertEqual(
             re.sub(pattern, '', res),
@@ -536,11 +544,11 @@ class MessagesTest(TestCase):
         res = render_template_with_form(
             '{% bootstrap_messages messages %}', {'messages': messages})
         expected = """
-        <div class="alert alert-danger alert-dismissable">
-            <button type="button" class="close" data-dismiss="alert"
-                aria-hidden="true">&#215;</button>
-            hello
-        </div>
+            <div class="alert alert-danger alert-dismissable">
+                <button type="button" class="close" data-dismiss="alert"
+                    aria-hidden="true">&#215;</button>
+                hello
+            </div>
         """
 
         self.assertEqual(
@@ -552,10 +560,11 @@ class MessagesTest(TestCase):
         res = render_template_with_form(
             '{% bootstrap_messages messages %}', {'messages': messages})
         expected = """
-    <div class="alert alert-danger alert-dismissable">
-        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&#215;</button>
-        hello http://example.com
-    </div>        """
+            <div class="alert alert-danger alert-dismissable">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&#215;</button>
+                hello http://example.com
+            </div>
+        """
         self.assertEqual(
             re.sub(pattern, '', res).replace('rel="nofollow"', ''),
             re.sub(pattern, '', expected).replace('rel="nofollow"', '')
@@ -565,11 +574,11 @@ class MessagesTest(TestCase):
         res = render_template_with_form(
             '{% bootstrap_messages messages %}', {'messages': messages})
         expected = """
-        <div class="alert alert-danger alert-dismissable">
-            <button type="button" class="close" data-dismiss="alert"
-                aria-hidden="true">&#215;</button>
-            hello there
-        </div>
+            <div class="alert alert-danger alert-dismissable">
+                <button type="button" class="close" data-dismiss="alert"
+                    aria-hidden="true">&#215;</button>
+                hello there
+            </div>
         """
         self.assertEqual(
             re.sub(pattern, '', res),
