@@ -3,6 +3,40 @@
 History
 -------
 
+
+8.2.1 (2017-02-23)
+++++++++++++++++++
+
+* Support for local languages in `url_replace_param` on Python 2 (#362, thanks @aamalev)
+* Correct checking Mapping instance (#363, thanks @aamalev)
+* Fix Django 1.11 import bug (see #369)
+* Add Django 1.11 and Python 3.6 to tests
+* Fix sdist issue with .pyc files
+
+
+8.1.0 (2017-01-12)
+++++++++++++++++++
+
+* Rolled back subresource integrity (see #353)
+* Documentation fix (thanks @clokep)
+
+
+8.0.0 (2017-01-06)
+++++++++++++++++++
+
+* **BREAKING** For Django >= 1.10 Remove everything to do with setting HTML attributes `required` (#337) and `disabled` (#345)
+* Add `id` parameter to bootstrap_button (#214)
+* Add `set_placeholder` to field and form renderers (#339, thanks @predatell)
+* Default button type to `btn-default`
+* Add `addon_before_class` and `addon_after_class` (#295, thanks @DanWright91 and others)
+* Fix handling of error class (#170)
+* No size class for checkboxes (#318, thanks @cybojenix)
+* Fix warnings during install (thanks @mfcovington)
+* Fix rare RunTimeError when working without database (#346, thanks @Mactory)
+* Add subresource integrity to external components (thanks @mfcovington and @Alex131089)
+* Several improvements to documentation, tests, and comments. Thanks all!
+
+
 7.1.0 (2016-09-16)
 ++++++++++++++++++
 

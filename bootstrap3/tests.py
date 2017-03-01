@@ -10,6 +10,7 @@ from django.forms.formsets import formset_factory
 from django.template import engines
 from django.test import TestCase
 
+from .bootstrap import DBS3_SET_REQUIRED_SET_DISABLED
 from .exceptions import BootstrapError
 from .text import text_value, text_concat
 from .utils import add_css_class, render_tag
@@ -206,32 +207,40 @@ class SettingsTest(TestCase):
         )
 
     def test_bootstrap_css_tag(self):
-        res = render_template_with_form('{% bootstrap_css %}')
-        self.assertIn(res.strip(), [
-            '<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">',
+        res = render_template_with_form('{% bootstrap_css %}').strip()
+        self.assertIn(
             '<link href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">',
-        ])
+            res
+        )
+        self.assertIn(
+            '<link href="//example.com/theme.css" rel="stylesheet">',
+            res
+        )
 
-    def test_settings_filter(self):
-        res = render_template_with_form('{{ "required_css_class"|bootstrap_setting }}')
-        self.assertEqual(res.strip(), 'bootstrap3-req')
-        res = render_template_with_form('{% if "javascript_in_head"|bootstrap_setting %}head{% else %}body{% endif %}')
-        self.assertEqual(res.strip(), 'head')
 
-    def test_required_class(self):
-        form = TestForm()
-        res = render_template_with_form('{% bootstrap_form form %}', {'form': form})
-        self.assertIn('bootstrap3-req', res)
+def test_settings_filter(self):
+    res = render_template_with_form('{{ "required_css_class"|bootstrap_setting }}')
+    self.assertEqual(res.strip(), 'bootstrap3-req')
+    res = render_template_with_form('{% if "javascript_in_head"|bootstrap_setting %}head{% else %}body{% endif %}')
+    self.assertEqual(res.strip(), 'head')
 
-    def test_error_class(self):
-        form = TestForm({})
-        res = render_template_with_form('{% bootstrap_form form %}', {'form': form})
-        self.assertIn('bootstrap3-err', res)
 
-    def test_bound_class(self):
-        form = TestForm({'sender': 'sender'})
-        res = render_template_with_form('{% bootstrap_form form %}', {'form': form})
-        self.assertIn('bootstrap3-bound', res)
+def test_required_class(self):
+    form = TestForm()
+    res = render_template_with_form('{% bootstrap_form form %}', {'form': form})
+    self.assertIn('bootstrap3-req', res)
+
+
+def test_error_class(self):
+    form = TestForm({})
+    res = render_template_with_form('{% bootstrap_form form %}', {'form': form})
+    self.assertIn('bootstrap3-err', res)
+
+
+def test_bound_class(self):
+    form = TestForm({'sender': 'sender'})
+    res = render_template_with_form('{% bootstrap_form form %}', {'form': form})
+    self.assertIn('bootstrap3-bound', res)
 
 
 class TemplateTest(TestCase):
@@ -398,34 +407,63 @@ class FieldTest(TestCase):
         self.assertIn('placeholder="Password"', res)
 
     def test_required_field(self):
-        required_field = render_form_field('subject')
-        self.assertIn('required', required_field)
-        self.assertIn('bootstrap3-req', required_field)
-        not_required_field = render_form_field('message')
-        self.assertNotIn('required', not_required_field)
-        # Required field with required=0
-        form_field = 'form.subject'
-        rendered = render_template_with_form('{% bootstrap_field ' + form_field + ' set_required=0 %}')
-        self.assertNotIn('required', rendered)
+        if DBS3_SET_REQUIRED_SET_DISABLED:
+            required_field = render_form_field('subject')
+            self.assertIn('required', required_field)
+            self.assertIn('bootstrap3-req', required_field)
+            not_required_field = render_form_field('message')
+            self.assertNotIn('required', not_required_field)
+            # Required field with required=0
+            form_field = 'form.subject'
+            rendered = render_template_with_form('{% bootstrap_field ' + form_field + ' set_required=0 %}')
+            self.assertNotIn('required', rendered)
+        else:
+            required_css_class = 'bootstrap3-req'
+            required_field = render_form_field('subject')
+            self.assertIn(required_css_class, required_field)
+            not_required_field = render_form_field('message')
+            self.assertNotIn(required_css_class, not_required_field)
         # Required settings in field
         form_field = 'form.subject'
         rendered = render_template_with_form(
-            '{% bootstrap_field ' + form_field + ' required_css_class="test-required" %}')
+            '{% bootstrap_field ' + form_field + ' required_css_class="test-required" %}'
+        )
         self.assertIn('test-required', rendered)
 
     def test_empty_permitted(self):
-        form = TestForm()
-        res = render_form_field('subject', {'form': form})
-        self.assertIn('required', res)
-        form.empty_permitted = True
-        res = render_form_field('subject', {'form': form})
-        self.assertNotIn('required', res)
+        """
+        If a form has empty_permitted, no fields should get the CSS class for required.
+        Django <= 1.8, also check `required` attribute.
+        """
+        if DBS3_SET_REQUIRED_SET_DISABLED:
+            required_css_class = 'bootstrap3-req'
+            form = TestForm()
+            res = render_form_field('subject', {'form': form})
+            self.assertIn(required_css_class, res)
+            form.empty_permitted = True
+            res = render_form_field('subject', {'form': form})
+            self.assertNotIn(required_css_class, res)
+        else:
+            required_css_class = 'bootstrap3-req'
+            form = TestForm()
+            res = render_form_field('subject', {'form': form})
+            self.assertIn(required_css_class, res)
+            form.empty_permitted = True
+            res = render_form_field('subject', {'form': form})
+            self.assertNotIn(required_css_class, res)
 
     def test_input_group(self):
         res = render_template_with_form('{% bootstrap_field form.subject addon_before="$"  addon_after=".00" %}')
         self.assertIn('class="input-group"', res)
         self.assertIn('class="input-group-addon">$', res)
         self.assertIn('class="input-group-addon">.00', res)
+
+    def test_input_group_addon_button(self):
+        res = render_template_with_form(
+            '{% bootstrap_field form.subject addon_before="$" addon_before_class="input-group-btn" addon_after=".00" addon_after_class="input-group-btn" %}')
+        self.assertIn('class="input-group"', res)
+        self.assertIn('class="input-group-btn">$', res)
+        self.assertIn('class="input-group-btn">.00', res)
 
     def test_size(self):
         def _test_size(param, klass):
@@ -620,11 +658,11 @@ class ButtonTest(TestCase):
     def test_button(self):
         res = render_template_with_form("{% bootstrap_button 'button' size='lg' %}")
         self.assertEqual(
-            res.strip(), '<button class="btn btn-lg">button</button>')
+            res.strip(), '<button class="btn btn-default btn-lg">button</button>')
         res = render_template_with_form("{% bootstrap_button 'button' size='lg' href='#' %}")
         self.assertIn(
             res.strip(),
-            '<a class="btn btn-lg" href="#">button</a><a href="#" ' +
+            '<a class="btn btn-default btn-lg" href="#">button</a><a href="#" ' +
             'class="btn btn-lg">button</a>')
 
 
@@ -652,5 +690,19 @@ class ShowLabelTest(TestCase):
         )
         self.assertEqual(
             res.strip(),
-            '<button class="btn"><span class="glyphicon glyphicon-info-sign"></span> test</button>'
+            '<button class="btn btn-default"><span class="glyphicon glyphicon-info-sign"></span> test</button>'
+        )
+        res = render_template_with_form(
+            "{% bootstrap_button 'test' icon='info-sign' button_class='btn-primary' %}"
+        )
+        self.assertEqual(
+            res.strip(),
+            '<button class="btn btn-primary"><span class="glyphicon glyphicon-info-sign"></span> test</button>'
+        )
+        res = render_template_with_form(
+            "{% bootstrap_button 'test' icon='info-sign' button_type='submit' %}"
+        )
+        self.assertEqual(
+            res.strip(),
+            '<button class="btn btn-default" type="submit"><span class="glyphicon glyphicon-info-sign"></span> test</button>'
         )

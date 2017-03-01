@@ -5,8 +5,8 @@ import re
 from math import floor
 
 from django import template
-from django.contrib.messages import constants as message_constants
 from django.contrib.messages import constants as DEFAULT_MESSAGE_LEVELS
+from django.contrib.messages import constants as message_constants
 from django.template import Context
 from django.utils.safestring import mark_safe
 
@@ -190,8 +190,10 @@ def bootstrap_css():
 
         {% bootstrap_css %}
     """
-    urls = [url for url in [bootstrap_css_url(), bootstrap_theme_url()] if url]
-    return mark_safe(''.join([render_link_tag(url) for url in urls]))
+    rendered_urls = [render_link_tag(bootstrap_css_url()), ]
+    if bootstrap_theme_url():
+        rendered_urls.append(render_link_tag(bootstrap_theme_url()))
+    return mark_safe(''.join([url for url in rendered_urls]))
 
 
 @register.simple_tag
@@ -235,7 +237,8 @@ def bootstrap_javascript(jquery=None):
             javascript += render_tag('script', attrs={'src': url})
     url = bootstrap_javascript_url()
     if url:
-        javascript += render_tag('script', attrs={'src': url})
+        attrs = {'src': url}
+        javascript += render_tag('script', attrs=attrs)
     return mark_safe(javascript)
 
 
@@ -311,6 +314,9 @@ def bootstrap_form(*args, **kwargs):
         form
             The form that is to be rendered
 
+        exclude
+            A list of field names (comma separated) that should not be rendered
+            E.g. exclude=subject,bcc
 
         See bootstrap_field_ for other arguments
 
@@ -409,12 +415,14 @@ def bootstrap_field(*args, **kwargs):
 
         set_required
             When set to ``True`` and the field is required then the ``required`` attribute is set on the
-            rendered field
+            rendered field. This only works up to Django 1.8. Higher Django versions handle ``required``
+            natively.
 
             :default: ``True``
 
         set_disabled
-            When set to ``True`` then the ``disabled`` attribute is set on the rendered field.
+            When set to ``True`` then the ``disabled`` attribute is set on the rendered field. This only
+            works up to Django 1.8.  Higher Django versions handle ``disabled`` natively.
 
             :default: ``False``
 
@@ -427,6 +435,8 @@ def bootstrap_field(*args, **kwargs):
                 * ``'medium'``
                 * ``'large'``
 
+        placeholder
+            Sets the placeholder text of a textbox
 
         horizontal_label_class
             Class used on the label when the ``layout`` is set to ``horizontal``.
@@ -449,6 +459,26 @@ def bootstrap_field(*args, **kwargs):
             ``'<span class="glyphicon glyphicon-calendar"></span>'``
             
             See the `Bootstrap docs <http://getbootstrap.com/components/#input-groups-basic>` for more examples.
+
+        addon_before_class
+            Class used on the span when ``addon_before`` is used.
+
+            One of the following values:
+                
+                * ``'input-group-addon'``
+                * ``'input-group-btn'``
+
+            :default: ``input-group-addon``
+
+        addon_after_class
+            Class used on the span when ``addon_after`` is used.
+
+            One of the following values:
+                
+                * ``'input-group-addon'``
+                * ``'input-group-btn'``
+
+            :default: ``input-group-addon``
 
         error_css_class
             CSS class used when the field has an error
@@ -538,6 +568,9 @@ def bootstrap_button(*args, **kwargs):
             Name of an icon to render in the button's visible content. See bootstrap_icon_ for acceptable values.
 
         button_class
+            The class of button to use. If none is given, btn-default will be used.
+
+        extra_classes
             Any extra CSS classes that should be added to the button.
 
         size
@@ -587,6 +620,12 @@ def bootstrap_icon(icon, **kwargs):
 
         icon
             Icon name. See the `Bootstrap docs <http://getbootstrap.com/components/#glyphicons>`_ for all icons.
+
+        extra_classes
+            Extra CSS classes to add to the icon HTML
+
+        title
+            A title for the icon (HTML title attrivute)
 
     **Usage**::
 
