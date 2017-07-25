@@ -8,10 +8,15 @@ except RuntimeError:
     ReadOnlyPasswordHashWidget = None
 
 from django.forms import (
-    TextInput, DateInput, FileInput, CheckboxInput, MultiWidget,
-    ClearableFileInput, Select, RadioSelect, CheckboxSelectMultiple
+    TextInput, DateInput, FileInput, CheckboxInput, MultiWidget, ClearableFileInput,
+    Select, RadioSelect, CheckboxSelectMultiple, NumberInput, EmailInput, URLInput
 )
-from django.forms.extras import SelectDateWidget
+# Django 1.9 moved SelectDateWidget to django.forms.widget from
+# django.forms.extras. Django 2.0 will remove the old import location.
+try:
+    from django.forms.widgets import SelectDateWidget
+except ImportError:
+    from django.forms.extras import SelectDateWidget
 from django.forms.forms import BaseForm, BoundField
 from django.forms.formsets import BaseFormSet
 from django.utils.html import conditional_escape, escape, strip_tags
@@ -161,6 +166,7 @@ class FormRenderer(BaseRenderer):
         if DBS3_SET_REQUIRED_SET_DISABLED and self.form.empty_permitted:
             self.set_required = False
 
+        self.error_types = kwargs.get('error_types', 'non_field_errors')
         self.error_css_class = kwargs.get('error_css_class', None)
         self.required_css_class = kwargs.get('required_css_class', None)
         self.bound_css_class = kwargs.get('bound_css_class', None)
@@ -196,14 +202,16 @@ class FormRenderer(BaseRenderer):
                 form_errors += field.errors
         return form_errors
 
-    def render_errors(self, type='all'):
-        form_errors = None
-        if type == 'all':
+    def render_errors(self, error_types='all'):
+        form_errors = []
+        if error_types == 'all':
             form_errors = self.get_fields_errors() + self.form.non_field_errors()
-        elif type == 'fields':
+        elif error_types == 'field_errors':
             form_errors = self.get_fields_errors()
-        elif type == 'non_fields':
+        elif error_types == 'non_field_errors':
             form_errors = self.form.non_field_errors()
+        elif error_types and error_types != 'none':
+            raise Exception('Illegal value "{}" for error_types.')
 
         if form_errors:
             return render_template_file(
@@ -212,14 +220,14 @@ class FormRenderer(BaseRenderer):
                     'errors': form_errors,
                     'form': self.form,
                     'layout': self.layout,
-                    'type': type,
+                    'error_types': error_types,
                 }
             )
 
         return ''
 
     def _render(self):
-        return self.render_errors() + self.render_fields()
+        return self.render_errors(self.error_types) + self.render_fields()
 
 
 class FieldRenderer(BaseRenderer):
@@ -256,6 +264,8 @@ class FieldRenderer(BaseRenderer):
         else:
             # Or just set it to empty
             self.placeholder = ''
+        if self.placeholder:
+            self.placeholder = text_value(mark_safe(self.placeholder))
 
         self.addon_before = kwargs.get('addon_before', self.widget.attrs.pop('addon_before', ''))
         self.addon_after = kwargs.get('addon_after', self.widget.attrs.pop('addon_after', ''))
@@ -436,7 +446,8 @@ class FieldRenderer(BaseRenderer):
         return html
 
     def make_input_group(self, html):
-        if (self.addon_before or self.addon_after) and isinstance(self.widget, (TextInput, DateInput, Select)):
+        if (self.addon_before or self.addon_after) and isinstance(
+                self.widget, (TextInput, NumberInput, EmailInput, URLInput, DateInput, Select)):
             before = '<span class="{input_class}">{addon}</span>'.format(
                 input_class=self.addon_before_class, addon=self.addon_before) if self.addon_before else ''
             after = '<span class="{input_class}">{addon}</span>'.format(
@@ -463,7 +474,7 @@ class FieldRenderer(BaseRenderer):
                     'show_help': self.show_help,
                 }
             )
-            html += '<span class="help-block">{help}</span>'.format(help=help_html)
+            html += help_html
         return html
 
     def get_field_class(self):
